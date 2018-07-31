@@ -1,0 +1,64 @@
+---
+title: "Import_Tidying"
+author: "aaron till"
+date: "7/30/2018"
+output: github_document
+---
+```{r}
+
+library(dplyr)
+library(ggmap)
+
+```
+
+
+
+
+# Run Louisiana on louisiana data, geo data and imported LA merge first
+```{r}
+
+select_data <- LA_merge %>%
+  select(record_id, demographics_timestamp,hh_id, zone,hh_add, hh_num, age, sex, resident, hh_years, contains('_c_yr'), -contains('vague'), -contains('notes'), denka_dist,denka_lat, denka_lng, hh_add_lng, hh_add_lat, denka_dist)
+
+```
+
+
+```{r}
+
+pre_tidy_data <- select_data 
+
+#replacing cancer elements wijth zero and adding move in year variable
+pre_tidy_data <- pre_tidy_data %>%
+  mutate_at(c(11:31), funs(replace(., is.na(.), 0))) %>%
+  mutate(move_in_year = ifelse(!is.na(hh_years), 2018 - hh_years, NA))
+
+#converting to numeric
+pre_tidy_data[11:37] <- lapply(pre_tidy_data[11:37], as.numeric)
+
+```
+
+```{r}
+
+#gathering all types of cancer together
+tidy_data <- pre_tidy_data %>%
+  gather('cancer_type', 'cancer_year', 11:31) %>%
+  group_by(record_id, demographics_timestamp,hh_id, zone,hh_add, hh_num, age, sex,move_in_year, resident, hh_years, denka_dist, denka_lat, denka_lng, hh_add_lat, hh_add_lng) %>%
+  summarise('cancer_year' = max(cancer_year))
+
+
+#adding wether cancer occured after move in
+tidy_data <- tidy_data %>%
+  mutate(cancer_after = ifelse(is.na(move_in_year), NA , ifelse(cancer_year >= move_in_year,1, 0))) %>%
+  mutate(cancer_after = ifelse(is.na(cancer_after) & cancer_year == 0, 0, cancer_after))
+
+```
+
+
+
+```{r}
+
+tidy_data %>% filter(cancer_after == 1)
+
+tidy_data %>% filter(is.na(cancer_after))
+
+```

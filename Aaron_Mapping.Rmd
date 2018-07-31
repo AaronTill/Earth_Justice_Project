@@ -1,0 +1,92 @@
+---
+title: "Aaron_Mapping"
+author: "aaron till"
+date: "7/31/2018"
+output: github_document
+---
+
+
+
+
+determing where to build bbox
+```{r}
+min(na.omit(tidy_data)$hh_add_lng)
+min(na.omit(tidy_data)$hh_add_lat)
+max(na.omit(tidy_data)$hh_add_lng)
+max(na.omit(tidy_data)$hh_add_lat)
+
+```
+
+```{r}
+
+bbox = c(-90.56, 30.03 ,-90.49 ,30.085)
+
+LA_map <- get_map(bbox, zoom = 14, maptype = 'toner-lite')
+
+ggmap(LA_map)
+
+```
+
+```{r}
+
+ggmap(LA_map) +
+  geom_point(data = filter(tidy_data, cancer_after == 1 | is.na(cancer_after)), aes(x = hh_add_lng, y = hh_add_lat, color = cancer_after)) +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), color = 'red', size = 3)
+
+
+
+```
+
+
+
+```{r}
+
+tidy_data %>%
+  group_by(zone) %>%
+  summarise(max_dist = max(denka_dist), max_lat = max(hh_add_lat), min_lat = min(hh_add_lat), max_lng = max(hh_add_lng), min_lng = min(hh_add_lng))
+
+
+
+```
+
+
+
+```{r}
+
+ggmap(LA_map) +
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 0.1, shape = 21,size = 41)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 0.1,shape = 21, size = 85)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 0.1, shape = 21, size = 150)+
+  geom_point(data=tidy_data, aes(hh_add_lng, hh_add_lat, color = zone), size = 0.25) +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3)+
+  scale_color_gradient(low = 'blue', high = 'red')
+
+
+```
+
+
+
+
+```{r}
+
+cancer_zone_data <- tidy_data %>%
+  group_by(zone, denka_lat, denka_lng) %>%
+  summarise(cancer_proportion = sum(na.omit(cancer_after))/n(), n())
+ 
+# do for all cancer
+# 
+```
+
+
+```{r}
+
+ggmap(LA_map) +
+  geom_point(data = filter(cancer_zone_data, zone == 1), aes(denka_lng, denka_lat, color = cancer_proportion), alpha = 0.1, size = 41)+
+  geom_point(data = filter(cancer_zone_data, zone == 2), aes(denka_lng, denka_lat, color = cancer_proportion), alpha = 0.1, size = 85)+
+  geom_point(data = filter(cancer_zone_data, zone == 3), aes(denka_lng, denka_lat, color = cancer_proportion), alpha = 0.1, size = 150)+
+  #geom_point(data=tidy_data, aes(hh_add_lng, hh_add_lat, color = zone), size = 0.25) +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3)+
+  scale_color_gradient(low = 'blue', high = 'red', limits = c(0,0.05))
+
+
+```
