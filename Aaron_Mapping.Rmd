@@ -57,13 +57,14 @@ tidy_data %>%
 
 ```{r}
 
-ggmap(LA_map) +
-  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 0.1, shape = 21,size = 41)+
-  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 0.1,shape = 21, size = 85)+
-  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 0.1, shape = 21, size = 150)+
-  geom_point(data=tidy_data, aes(hh_add_lng, hh_add_lat, color = zone), size = 0.25) +
+cancer_points_generous_rings <- ggmap(LA_map) +
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 92)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 135)+
+  geom_point(data=tidy_data, aes(hh_add_lng, hh_add_lat, color = cancer, alpha = cancer), size = 0.5) +
   geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3)+
-  scale_color_gradient(low = 'blue', high = 'red')
+  scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE)
 
 
 ```
@@ -75,8 +76,10 @@ ggmap(LA_map) +
 
 cancer_zone_data <- tidy_data %>%
   group_by(zone, denka_lat, denka_lng) %>%
-  summarise(cancer_proportion = sum(na.omit(cancer_after))/n(), n())
+  summarise(cancer_after_proportion = sum(na.omit(cancer_after))/n(), cancer_proportion = sum(na.omit(cancer))/n(),  n())
  
+cancer_zone_data
+
 # do for all cancer
 # 
 ```

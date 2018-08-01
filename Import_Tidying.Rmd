@@ -53,12 +53,40 @@ tidy_data <- tidy_data %>%
 
 ```
 
+#adding all possible cancer folks (not just confirmed cancer after)
+```{r}
+tidy_data <- tidy_data %>%
+  mutate(cancer = ifelse(cancer_after == 1 | is.na(cancer_after), 1, 0))
 
+
+```
 
 ```{r}
 
 tidy_data %>% filter(cancer_after == 1)
 
 tidy_data %>% filter(is.na(cancer_after))
+
+```
+
+#extending zone1
+
+```{r}
+
+tidy_data <- tidy_data %>%
+  ungroup() %>%
+  mutate(zone = ifelse(zone == 2 & denka_dist < 1300, 1, zone)) #%>%
+  #mutate(zone = ifelse(zone == 3 & denka_dist < 2100, 2, zone))
+
+
+```
+
+
+```{r}
+
+tidy_data %>%
+  group_by(zone) %>%
+  summarise(n())
+
 
 ```
