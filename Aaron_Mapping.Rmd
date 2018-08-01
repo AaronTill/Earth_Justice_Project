@@ -6,7 +6,11 @@ output: github_document
 ---
 
 
+```{r}
 
+library(ggmap)
+
+```
 
 determing where to build bbox
 ```{r}
