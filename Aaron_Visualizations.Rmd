@@ -1,0 +1,45 @@
+---
+title: "Vis"
+author: "aaron till"
+date: "8/2/2018"
+output: github_document
+---
+```{r}
+tidy_data %>% 
+  filter(cancer == 1) %>%
+  group_by(hh_add_lat, hh_add_lng, hh_id) %>% 
+  summarise(cancer_count = n())%>%
+  ungroup() %>%
+  group_by(cancer_count) %>%
+  summarise(households = n()) %>%
+  ungroup() %>%
+ggplot(aes(x= factor(cancer_count), y = households)) +
+        geom_bar(stat = 'identity') +
+        geom_label(aes(y = 30, label = households))
+
+
+
+```
+
+# cancer visualization 
+
+```{r}
+tidy_data %>%
+  filter(cancer ==1) %>%
+ggplot(aes(y = sex, x = age)) +
+  geom_jitter()
+
+
+```
+
+
+# untided cancer death visualization
+```{r}
+
+tidy_data %>%
+  filter(hh_death_c ==1) %>%
+ggplot(aes(y = hh_death_c_type, x = hh_death_c_age)) +
+  geom_jitter()
+
+
+```
