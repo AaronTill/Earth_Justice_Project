@@ -76,6 +76,7 @@ cancer_points_generous_rings
 ```
 
 
+
 ```{r}
 
 cancer_points_restricted_rings <- ggmap(LA_map) +
@@ -110,13 +111,31 @@ ggplot(aes(x= factor(cancer_count), y = households)) +
 
 ```
 
-```{r including smokers}
+```{r removing all people who moved in after 2013}
+
+cancer_points_restricted_rings2 <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer_after == 0 & move_in_year <= 2013), aes(hh_add_lng, hh_add_lat), size = 0.5, fill = 'white', color = 'grey', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_after  == 1 & move_in_year <= 2013), aes(hh_add_lng, hh_add_lat), size = 0.5, color = 'red') +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134) +
+    geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/30000, y = 30.065, label = zone)) 
+
+cancer_points_restricted_rings2
+
+```
+
+
+```{r removing smokers}
 
 # had to make real_hh_smoking from smoking because hh_smoking was mostly NA values
 
 cancer_points_smokeless_rings <- ggmap(LA_map) +
   geom_point(data=filter(tidy_data, cancer == 0), aes(hh_add_lng, hh_add_lat), size = 0.5, fill = 'white', color = 'grey', shape = 21) +
-    geom_point(data=filter(tidy_data, cancer == 1 & real_hh_smoking == 1), aes(hh_add_lng, hh_add_lat), size = 0.5, color = 'black') +
+    geom_point(data=filter(tidy_data, cancer == 1 & real_hh_smoking > 0), aes(hh_add_lng, hh_add_lat), size = 0.5, color = 'black') +
   geom_point(data=filter(tidy_data, cancer  == 1 & real_hh_smoking == 0), aes(hh_add_lng, hh_add_lat), size = 0.5, color = 'red') +
   geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3)+
   #scale_color_gradient(low = 'grey', high = 'red') +
@@ -128,6 +147,27 @@ cancer_points_smokeless_rings <- ggmap(LA_map) +
 
 cancer_points_smokeless_rings
 
+
+```
+
+
+
+```{r}
+tidy_data %>% 
+  group_by(zone) %>%
+  summarise(cancer_after_proportion = sum(na.omit(cancer_after))/n(), cancer_proportion = sum(na.omit(cancer))/n(),  n(), n2 = n() - (sum(na.omit(cancer)) - sum(na.omit(cancer_after))))
+
+
+tidy_data %>% 
+  filter(move_in_year <= 1970) %>%
+  group_by(zone) %>%
+  summarise(cancer_after_proportion = sum(na.omit(cancer_after))/n(), cancer_proportion = sum(na.omit(cancer))/n(),  n(), n2 = n() - (sum(na.omit(cancer)) - sum(na.omit(cancer_after))))
+
+
+tidy_data %>%
+  mutate(binary_smoking = ifelse(real_hh_smoking > 0, 1, 0)) %>%
+  group_by(cancer, binary_smoking) %>%
+  summarise(n())
 
 ```
 
