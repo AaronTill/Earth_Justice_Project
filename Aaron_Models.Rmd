@@ -1,0 +1,49 @@
+---
+title: "Aaron_Models"
+author: "aaron till"
+date: "8/3/2018"
+output: github_document
+---
+
+```{r}
+
+Model_Generous_Cancer <- glm(cancer ~ denka_dist + as.factor(real_hh_smoking > 0) + age + sex, data = tidy_data, family = 'binomial')
+
+
+
+summary(Model_Generous_Cancer)
+
+ggplot(tidy_data, aes(x = denka_dist, y = cancer)) +
+  geom_jitter() +
+  geom_smooth()
+
+
+  
+  
+```
+
+```{r}
+
+Model_Restricted_Cancer <- glm(cancer_after ~ denka_dist + as.factor(real_hh_smoking > 0) + sex + age, data = tidy_data, family = 'binomial')
+
+summary(Model_Restricted_Cancer)
+
+```
+
+
+```{r}
+
+Model_Restricted_Cancer2 <- glm(cancer_after ~ denka_dist + as.factor(real_hh_smoking > 0) + sex + age, data = filter(tidy_data, !is.na(move_in_year)), family = 'binomial')
+
+summary(Model_Restricted_Cancer2)
+
+```
+
+
+```{r}
+
+Model_No_Smokers <- glm(cancer ~ denka_dist + sex + age, data = filter(tidy_data, real_hh_smoking == 0), family = 'binomial')
+
+summary(Model_No_Smokers)
+
+```
