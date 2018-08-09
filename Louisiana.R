@@ -2,7 +2,9 @@ library(tidyverse)
 library(geosphere)
 library(ggmap)
 
-setwd("/Users/elan/Documents/SLS Policy Lab/Louisiana DuPont/Analysis/Final data/")
+#setwd("/Users/elan/Documents/SLS Policy Lab/Louisiana DuPont/Analysis/Final data/")
+
+setwd("~/Till_Thesis/Summer_Research_Work/Earth_Justice_Project/")
 LA_data_Joe <- read_csv(file = "la_geocoded_new.csv")
 
 # compare data to make sure same versions
