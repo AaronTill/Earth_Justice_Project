@@ -20,7 +20,7 @@ library(ggplot2)
 ```{r}
 
 select_data <- LA_merge %>%
-  select(record_id, demographics_timestamp,hh_id, zone,hh_add, hh_num, age, sex, resident, hh_years, contains('_c_yr'), -contains('vague'), -contains('notes'), denka_dist,denka_lat, denka_lng, hh_add_lng, hh_add_lat, denka_dist, hh_smoking, smoking, contains('death_c'), allergies_year, asthma_year, bronchitis_year, sinus_year, city_old)
+  select(record_id, demographics_timestamp,hh_id, zone,hh_add, hh_num, age, sex, resident, hh_years, contains('_c_yr'), -contains('vague'), -contains('notes'), denka_dist,denka_lat, denka_lng, hh_add_lng, hh_add_lat, denka_dist, hh_smoking, smoking, contains('death_c'), allergies_year, asthma_year, bronchitis_year, sinus_year, city_old, school_name, nosebleeds, headaches)
 
 ```
 
@@ -45,7 +45,7 @@ pre_tidy_data[11:37] <- lapply(pre_tidy_data[11:37], as.numeric)
 tidy_data <- pre_tidy_data %>%
   gather('cancer_type', 'cancer_year', 11:31) %>%
   mutate(cancer_type = ifelse(cancer_year == 0, NA, cancer_type)) %>% 
-  group_by(record_id, demographics_timestamp,hh_id, zone,hh_add, hh_num, age, sex,move_in_year, resident, hh_years, denka_dist, denka_lat, denka_lng, hh_add_lat, hh_add_lng, hh_smoking, smoking, hh_death_c, hh_death_c_type, hh_death_c_sex, hh_death_c_age, hh_death_c_year, allergies_year, asthma_year, bronchitis_year, sinus_year, city_old) %>%
+  group_by(record_id, demographics_timestamp,hh_id, zone,hh_add, hh_num, age, sex,move_in_year, resident, hh_years, denka_dist, denka_lat, denka_lng, hh_add_lat, hh_add_lng, hh_smoking, smoking, hh_death_c, hh_death_c_type, hh_death_c_sex, hh_death_c_age, hh_death_c_year, allergies_year, asthma_year, bronchitis_year, sinus_year, city_old, school_name, nosebleeds, headaches) %>%
   summarise('cancer_year' = max(cancer_year), 'cancer_type'  = any(!is.na(cancer_type))) %>% ungroup()#), first(cancer_type), NA)) 
               #taking the most recent year an individual has contracted cancer
 ```
@@ -191,6 +191,25 @@ summarise(n =n(), mean(denka_dist), mean(Resp_Year)) %>%
 arrange(desc(n)) %>%
 View()
 
+
+tidy_data %>%
+  mutate(asthma = ifelse(asthma_year > 0 & !is.na(asthma_year), 1, 0), bronchitis = ifelse(bronchitis_year > 0 & !is.na(bronchitis_year), 1, 0), sinus = ifelse(sinus_year > 0 & !is.na(sinus_year), 1, 0))%>%
+  group_by(zone) %>%
+  summarise(asthma = sum(asthma), asthma_prop = asthma/n(), bronchitis = sum(bronchitis), bronchitis_prop = bronchitis/n(), sinus = sum(sinus), sinus_prop = sinus/n())
+
+
+```
+
+#Children
+
+```{r}
+
+tidy_data %>%
+  filter(age < 12) %>%
+  filter(grepl('([A-Z]{5}|[:alnum:]{0,3})\\sWard', school_name) | grepl('E([^\\s]{0,1}|ast)\\sS[^\\s]{1,4}\\sJ', school_name)) %>%
+  mutate(nosebleeds = ifelse(nosebleeds == 1 & !is.na(nosebleeds), 1, 0), headaches = ifelse(headaches == 1  & !is.na(headaches), 1, 0)) %>%
+  group_by(zone) %>%
+  summarise(nosebleeds = sum(nosebleeds), nosebleed_prop = nosebleeds/n(), headaches = sum(headaches), headache_prop = headaches/n(), n())
 
 
 ```
