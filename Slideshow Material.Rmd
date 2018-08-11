@@ -1,0 +1,152 @@
+---
+title: "Slideshow Material"
+author: "aaron till"
+date: "8/10/2018"
+output: github_document
+---
+
+Test
+
+```{r}
+
+test <- ggmap(LA_map) +
+  geom_point(data=tidy_data, aes(hh_add_lng, hh_add_lat, color = zone), size = 4) +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134*4, stroke = 2) +
+  geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/30000, y = 30.065, label = zone), size = 8) +
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+  
+  
+
+test
+
+
+```
+
+
+
+Slide 1 
+  Universe: All
+  Variable: Cancer
+
+```{r}
+
+map_all_cancer <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer == 0), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer  == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134*4, stroke = 2) +
+  geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/20000, y = 30.065, label = zone), size = 8) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(), 
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+  
+  
+
+map_all_cancer
+
+
+```
+
+Slide 2 
+  Universe: All
+  Variable: Cancer, filter out cancer that occured pre_move in
+
+```{r}
+
+map_cancer_local <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer_after == 0), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_after  == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134*4, stroke = 2) +
+  geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/20000, y = 30.065, label = zone), size = 8) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(), 
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+  
+  
+
+map_cancer_local
+
+```
+
+
+
+Slide 3 
+  Universe: Respondents
+  Variable: Cancer after move in
+
+```{r}
+
+map_respondents_cancer_local <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer_after == 0 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_after  == 1 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134*4, stroke = 2) +
+  geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/20000, y = 30.065, label = zone), size = 8) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(), 
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+  
+  
+
+map_respondents_cancer_local
+
+```
+
+
+Slide r 
+  Universe: Respondents
+  Variable: Cancer after move in, or cancer after move in to select previous residence
+
+```{r}
+
+map_respondents_cancer_local <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer_after == 0 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_after  == 1 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134*4, stroke = 2) +
+  geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/20000, y = 30.065, label = zone), size = 8) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(), 
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+  
+  
+
+map_respondents_cancer_local
+
+```
