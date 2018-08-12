@@ -89,7 +89,7 @@ list_of_cities = c("2 streets over (Reserve)", "Bellpoint", "Edgard","Edgard, St
 
 tidy_data <- tidy_data %>%
   mutate(cancer_after_cities = ifelse(cancer_after == 1, 1, 0)) %>%
-  mutate(cancer_after_cities = ifelse(cancer_year >=  hh_old_years & city_old %in% list_of_cities, 1, cancer_after_cities)) 
+  mutate(cancer_after_cities = ifelse(!is.na(hh_old_years) & cancer_year >=  hh_old_years & city_old %in% list_of_cities, 1, cancer_after_cities)) 
 ```
 
 
@@ -167,9 +167,20 @@ tidy_data %>%
 ```
 
 ```{r}
-grep('^|\\s[:alpha:]+;|$', unlist(LA_merge$hh_death_c_type), value = TRUE)
+incomplete_age_cancer_death_data <- tidy_data %>%
+  filter(grepl('[1-9]{2}', hh_death_c_age)) %>%
+  extract(hh_death_c_age, c('cancer_death_age'), regex = '([\\d]{2})', convert = TRUE, remove = FALSE) %>% 
+  head()
+# $|;\\s*[A-Z]+[\\d]{0,1}:\\s([\\d]{2})$|;\\s*[A-Z]+[1-9]{0,1}:\\s*([1-9]{2})$|;\\s*[A-Z]+[1-9]{0,1}:\\s*([1-9]{2})$|;\\s*[A-Z]+[1-9]{0,1}:\\s*([1-9]{2})$'
 
-grep('^|\\s[:alpha:]+;|$', unlist(LA_merge$hh_death_c_age), value = TRUE)
+#1','cancer_death_age2', 'cancer_death_age3', 'cancer_death_age4', 'cancer_death_age5'
+
+```
+
+```{r}
+#grep('^|\\s[:alpha:]+;|$', unlist(LA_merge$hh_death_c_type), value = TRUE)
+
+#grep('^|\\s[:alpha:]+;|$', unlist(LA_merge$hh_death_c_age), value = TRUE)
 
 
 #c_death_type <- LA_merge %>%

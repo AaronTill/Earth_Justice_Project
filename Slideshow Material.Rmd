@@ -5,6 +5,11 @@ date: "8/10/2018"
 output: github_document
 ---
 
+```{r}
+library(ggthemes)
+library(sjPlot)
+```
+
 Test
 
 ```{r}
@@ -25,21 +30,37 @@ test <- ggmap(LA_map) +
   
 
 test
+# convert to 1900 size on monitor or 2100 size on laptop screen, ring 1 should align with road
+
+```
+
+Barplot 0 (numbers in each zone)
+
+```{r}
+tidy_data %>%
+  group_by(zone) %>%
+  summarise(Individuals = n()) %>%
+ggplot(aes(x = factor(zone), y = Individuals)) +
+  geom_bar(stat = 'identity')+
+  xlab('Zone') +
+  geom_label(aes(y = 100, label = Individuals)) +
+  theme_tufte()
+
+  
 
 
 ```
 
 
-
-Slide 1 
+Map 1 
   Universe: All
   Variable: Cancer
 
 ```{r}
 
 map_all_cancer <- ggmap(LA_map) +
-  geom_point(data=filter(tidy_data, cancer == 0), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
-  geom_point(data=filter(tidy_data, cancer  == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data=filter(tidy_data, cancer_aaron == 0), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_aaron  == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
   geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
   #scale_color_gradient(low = 'grey', high = 'red') +
   guides(color = FALSE, alpha = FALSE) +
@@ -61,7 +82,54 @@ map_all_cancer
 
 ```
 
-Slide 2 
+Barplot 1
+
+
+```{r}
+
+tidy_data %>%
+  group_by(zone) %>%
+  summarise(cancer_prop = sum(cancer_aaron)/n()) %>%
+ggplot(aes(x = factor(zone), y = cancer_prop)) +
+  geom_bar(stat = 'identity') +
+  ylab('Cancer Proportion') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.03, label = cancer_prop)) + 
+  theme_tufte()
+
+
+```
+
+Regression Table 1
+
+```{r}
+
+glm_data <- tidy_data %>% 
+  select(-cancer) %>%
+  mutate('cancer' = cancer_aaron) %>%
+  mutate('smoking_hh' = ifelse(real_hh_smoking > 0, 1, 0))
+
+Cancer1 <- glm(cancer ~ denka_dist, data = glm_data, family = 'binomial')
+
+
+Cancer2 <- glm(cancer ~ denka_dist + age, data = glm_data, family = 'binomial')
+
+
+Cancer3 <- glm(cancer ~ denka_dist + age + sex, data = glm_data, family = 'binomial')
+
+Cancer4 <- glm(cancer ~ denka_dist + smoking_hh + age + sex, data = glm_data, family = 'binomial')
+
+
+
+c1 <- sjt.lm(Cancer1, Cancer2, Cancer3, Cancer4, show.ci = FALSE, show.std = TRUE)
+
+c1
+
+
+```
+
+
+Map 2 
   Universe: All
   Variable: Cancer, filter out cancer that occured pre_move in
 
@@ -69,7 +137,7 @@ Slide 2
 
 map_cancer_local <- ggmap(LA_map) +
   geom_point(data=filter(tidy_data, cancer_after == 0), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
-  geom_point(data=filter(tidy_data, cancer_after  == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data=filter(tidy_data, cancer_after  == 1 | is.na(cancer_after)), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
   geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
   #scale_color_gradient(low = 'grey', high = 'red') +
   guides(color = FALSE, alpha = FALSE) +
@@ -90,9 +158,58 @@ map_cancer_local
 
 ```
 
+Barplot 2
 
 
-Slide 3 
+```{r}
+
+tidy_data %>%
+  mutate(cancer_after = ifelse(is.na(cancer_after),1, cancer_after)) %>%
+  group_by(zone) %>%
+  summarise(cancer_prop = sum(cancer_after)/n()) %>%
+ggplot(aes(x = factor(zone), y = cancer_prop)) +
+  geom_bar(stat = 'identity') +
+  ylab('Cancer Proportion') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.03, label = cancer_prop)) + 
+  theme_tufte()
+
+
+```
+
+Regression Table 2
+
+```{r}
+
+glm_data <- tidy_data %>% 
+  select(-cancer) %>%
+  mutate('cancer' = cancer_aaron) %>%
+  mutate('smoking_hh' = ifelse(real_hh_smoking > 0, 1, 0)) %>%
+  mutate('cancer_filtered' = ifelse(is.na(cancer_after),1, cancer_after))
+
+Cancer1 <- glm(cancer_filtered ~ denka_dist, data = glm_data, family = 'binomial')
+
+
+Cancer2 <- glm(cancer_filtered ~ denka_dist + age, data = glm_data, family = 'binomial')
+
+
+Cancer3 <- glm(cancer_filtered ~ denka_dist + age + sex, data = glm_data, family = 'binomial')
+
+Cancer4 <- glm(cancer_filtered ~ denka_dist + smoking_hh + age + sex, data = glm_data, family = 'binomial')
+
+
+
+c2 <- sjt.lm(Cancer1, Cancer2, Cancer3, Cancer4, show.ci = FALSE, show.std = TRUE)
+
+c2
+
+
+```
+
+
+
+
+Map 3 
   Universe: Respondents
   Variable: Cancer after move in
 
@@ -121,16 +238,67 @@ map_respondents_cancer_local
 
 ```
 
+Barplot 3
 
-Slide r 
+
+```{r}
+
+tidy_data %>%
+  filter(respondent == 1) %>%
+  group_by(zone) %>%
+  summarise(cancer_prop = sum(cancer_after)/n()) %>%
+ggplot(aes(x = factor(zone), y = cancer_prop)) +
+  geom_bar(stat = 'identity') +
+  ylab('Cancer Proportion') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.03, label = cancer_prop)) + 
+  theme_tufte()
+
+
+```
+
+Regression Table 3
+
+```{r}
+
+glm_data <- tidy_data %>% 
+  filter(respondent == 1) %>%
+  select(-cancer) %>%
+  mutate('cancer' = cancer_aaron) %>%
+  mutate('smoking_hh' = ifelse(real_hh_smoking > 0, 1, 0)) %>%
+  mutate('cancer_filtered' = ifelse(is.na(cancer_after),1, cancer_after))
+
+Cancer1 <- glm(cancer_after ~ denka_dist, data = glm_data, family = 'binomial')
+
+
+Cancer2 <- glm(cancer_after ~ denka_dist + age, data = glm_data, family = 'binomial')
+
+
+Cancer3 <- glm(cancer_after~ denka_dist + age + sex, data = glm_data, family = 'binomial')
+
+Cancer4 <- glm(cancer_after ~ denka_dist + smoking_hh + age + sex, data = glm_data, family = 'binomial')
+
+
+
+c3 <- sjt.lm(Cancer1, Cancer2, Cancer3, Cancer4, show.ci = FALSE, show.std = TRUE)
+
+c3
+
+
+```
+
+
+Maps 4 
   Universe: Respondents
   Variable: Cancer after move in, or cancer after move in to select previous residence
 
 ```{r}
 
-map_respondents_cancer_local <- ggmap(LA_map) +
-  geom_point(data=filter(tidy_data, cancer_after == 0 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
-  geom_point(data=filter(tidy_data, cancer_after  == 1 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+ # var = cancer_after_cities
+
+map_respondents_cancer_wider <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer_after_cities == 0 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_after_cities  == 1 & respondent == 1), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
   geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
   #scale_color_gradient(low = 'grey', high = 'red') +
   guides(color = FALSE, alpha = FALSE) +
@@ -147,6 +315,283 @@ map_respondents_cancer_local <- ggmap(LA_map) +
   
   
 
-map_respondents_cancer_local
+map_respondents_cancer_wider
 
 ```
+
+Barplot 4
+
+
+```{r}
+
+tidy_data %>%
+  filter(respondent == 1) %>%
+  group_by(zone) %>%
+  summarise(cancer_prop = sum(cancer_after_cities)/n()) %>%
+ggplot(aes(x = factor(zone), y = cancer_prop)) +
+  geom_bar(stat = 'identity') +
+  ylab('Cancer Proportion') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.03, label = cancer_prop)) + 
+  theme_tufte()
+
+
+```
+
+Regression Table 4
+
+```{r}
+
+glm_data <- tidy_data %>% 
+  filter(respondent == 1) %>%
+  select(-cancer) %>%
+  mutate('cancer' = cancer_aaron) %>%
+  mutate('smoking_hh' = ifelse(real_hh_smoking > 0, 1, 0)) %>%
+  mutate('cancer_filtered' = ifelse(is.na(cancer_after),1, cancer_after))
+
+Cancer1 <- glm(cancer_after_cities ~ denka_dist, data = glm_data, family = 'binomial')
+
+
+Cancer2 <- glm(cancer_after_cities ~ denka_dist + age, data = glm_data, family = 'binomial')
+
+
+Cancer3 <- glm(cancer_after_cities~ denka_dist + age + sex, data = glm_data, family = 'binomial')
+
+Cancer4 <- glm(cancer_after_cities ~ denka_dist + smoking_hh + age + sex, data = glm_data, family = 'binomial')
+
+
+
+c4 <- sjt.lm(Cancer1, Cancer2, Cancer3, Cancer4, show.ci = FALSE, show.std = TRUE)
+
+c4
+
+
+```
+
+
+Map 5
+  Universe: All respondents moved in after 2013
+  Variable: Cancer after move in
+
+
+```{r}
+
+map_respondents_cancer_2013 <- ggmap(LA_map) +
+  geom_point(data=filter(tidy_data, cancer_after == 0 & move_in_year <= 2013), aes(hh_add_lng, hh_add_lat), size = 1*4, fill = 'white', color = 'black', shape = 21) +
+  geom_point(data=filter(tidy_data, cancer_after  == 1 & move_in_year <= 2013), aes(hh_add_lng, hh_add_lat), size = 1*4, color = 'red') +
+  geom_point(data = tidy_data, aes(x = denka_lng, denka_lat), shape = 4, size = 3*4)+
+  #scale_color_gradient(low = 'grey', high = 'red') +
+  guides(color = FALSE, alpha = FALSE) +
+    geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21,size = 56*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1,shape = 21, size = 88*4, stroke = 2)+
+  geom_point(data = tidy_data[0:1,], aes(denka_lng, denka_lat), alpha = 1, shape = 21, size = 134*4, stroke = 2) +
+  geom_label(data = cancer_zone_data, aes(x = min_lng - min_lng/20000, y = 30.065, label = zone), size = 8) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(), 
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+  
+  
+
+map_respondents_cancer_2013
+
+```
+
+Barplot 5
+
+```{r}
+
+tidy_data %>%
+  filter(move_in_year <= 2013) %>%
+  group_by(zone) %>%
+  summarise(cancer_prop = sum(cancer_after)/n()) %>%
+ggplot(aes(x = factor(zone), y = cancer_prop)) +
+  geom_bar(stat = 'identity') +
+  ylab('Cancer Proportion') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.03, label = cancer_prop)) + 
+  theme_tufte()
+
+
+```
+
+Regression Table 4
+
+```{r}
+
+glm_data <- tidy_data %>% 
+  filter(cancer<=2013) %>%
+  select(-cancer) %>%
+  mutate('cancer' = cancer_aaron) %>%
+  mutate('smoking_hh' = ifelse(real_hh_smoking > 0, 1, 0)) %>%
+  mutate('cancer_filtered' = ifelse(is.na(cancer_after),1, cancer_after))
+
+Cancer1 <- glm(cancer_after ~ denka_dist, data = glm_data, family = 'binomial')
+
+
+Cancer2 <- glm(cancer_after ~ denka_dist + age, data = glm_data, family = 'binomial')
+
+
+Cancer3 <- glm(cancer_after ~ denka_dist + age + sex, data = glm_data, family = 'binomial')
+
+Cancer4 <- glm(cancer_after~ denka_dist + smoking_hh + age + sex, data = glm_data, family = 'binomial')
+
+
+
+c5 <- sjt.lm(Cancer1, Cancer2, Cancer3, Cancer4, show.ci = FALSE, show.std = TRUE)
+
+c5
+
+
+```
+
+Barplot 6
+  Length of current residence by zone
+
+```{r}
+
+tidy_data %>%
+  filter(!is.na(move_in_year)) %>%
+  group_by(zone) %>%
+  summarise(length = median(2018 - move_in_year)) %>%
+ggplot(aes(x = factor(zone), y = length)) +
+  geom_bar(stat = 'identity') +
+  ylab('Median Years of Residence') +
+  xlab('Zone') +
+  geom_label(aes(y = 10, label = length)) + 
+  theme_tufte()
+
+
+```
+
+
+
+Barplot 7
+  Length of cancer by zone
+
+```{r}
+
+tidy_data %>%
+  filter(cancer_year>0) %>%
+  group_by(zone) %>%
+  summarise(length = median(2018 - cancer_year)) %>%
+ggplot(aes(x = factor(zone), y = length)) +
+  geom_bar(stat = 'identity') +
+  ylab('Median Years of Cancer') +
+  xlab('Zone') +
+  geom_label(aes(y = 2, label = length)) + 
+  theme_tufte()
+
+
+```
+Barplot 8
+  Years of residence before cancer
+
+```{r}
+
+tidy_data %>%
+  filter(cancer_year>0 & !is.na(move_in_year)) %>%
+  group_by(zone) %>%
+  summarise(length = median(cancer_year - move_in_year)) %>%
+ggplot(aes(x = factor(zone), y = length)) +
+  geom_bar(stat = 'identity') +
+  ylab('Median Years of Residence Before Cancer') +
+  xlab('Zone') +
+  geom_label(aes(y = 10, label = length)) + 
+  theme_tufte()
+
+
+```
+
+
+Barplot 9
+  Median age of developing cancer
+
+```{r}
+
+tidy_data %>%
+  filter(cancer_year>0) %>%
+  group_by(zone) %>%
+  summarise(length = median(age - (2018-cancer_year))) %>%
+ggplot(aes(x = factor(zone), y = length)) +
+  geom_bar(stat = 'identity') +
+  ylab('Median Age of Cancer Diagnosis') +
+  xlab('Zone') +
+  geom_label(aes(y = 10, label = length)) + 
+  theme_tufte()
+
+
+```
+
+
+
+Barplot 10
+  Median age of cancer death
+  
+  
+```{r}
+
+incomplete_age_cancer_death_data %>%
+  group_by(zone) %>%
+  summarise(length = median(age)) %>%
+ggplot(aes(x = factor(zone), y = length)) +
+  geom_bar(stat = 'identity') +
+  ylab('Median Age of Primary Cancer Death per Household') +
+  xlab('Zone') +
+  geom_label(aes(y = 10, label = length)) + 
+  theme_tufte()
+
+
+```
+
+
+Barplot 11
+  Respiratory complication rates
+  
+  
+```{r}
+
+tidy_data %>%
+  mutate(asthma = ifelse(asthma_year > 0 & !is.na(asthma_year), 1, 0), bronchitis = ifelse(bronchitis_year > 0 & !is.na(bronchitis_year), 1, 0), sinus = ifelse(sinus_year > 0 & !is.na(sinus_year), 1, 0))%>%
+  group_by(zone) %>%
+  summarise(asthma = sum(asthma), Asthma = asthma/n(), bronchitis = sum(bronchitis), Bronchitis = bronchitis/n(), sinus = sum(sinus), Sinus = sinus/n()) %>%
+  gather('Type', 'Proportion', Asthma, Bronchitis, Sinus) %>%
+ggplot(aes(x = Type, y = Proportion))  +
+  geom_bar(stat = 'identity') +
+  facet_grid(.~factor(zone)) + 
+  ylab('Proportion Suffering from Respiratory Illness') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.05, label = round(Proportion, 3))) + 
+  theme_tufte()
+
+
+```
+
+
+Barplot 12
+  Childhood Ailments
+  
+  
+```{r}
+
+tidy_data %>%
+  filter(age < 12) %>%
+  filter(grepl('([A-Z]{5}|[:alnum:]{0,3})\\sWard', school_name) | grepl('E([^\\s]{0,1}|ast)\\sS[^\\s]{1,4}\\sJ', school_name)) %>%
+  mutate(nosebleeds = ifelse(nosebleeds == 1 & !is.na(nosebleeds), 1, 0), headaches = ifelse(headaches == 1  & !is.na(headaches), 1, 0)) %>%
+  group_by(zone) %>%
+  summarise(nosebleeds = sum(nosebleeds), Nosebleeds = nosebleeds/n(), headaches = sum(headaches), Headaches = headaches/n(), n()) %>%
+  gather('Type', 'Proportion', Nosebleeds, Headaches) %>%
+ggplot(aes(x = Type, y = Proportion))  +
+  geom_bar(stat = 'identity') +
+  facet_grid(.~factor(zone)) + 
+  ylab('Proportion Children With Nosebleeds and Headaches') +
+  xlab('Zone') +
+  geom_label(aes(y = 0.05, label = round(Proportion, 3))) + 
+  theme_tufte()
+
+
+```
+
+
